@@ -117,6 +117,9 @@ def _result(status, answer, trace, usage, error=None):
 def run_agent(question, provider, tools, max_steps=6):
     """Trả dict: status (completed|max_steps|error), answer, trace, usage."""
     schemas = getattr(tools, 'schemas', SCHEMAS)  # bonus tools mang schemas riêng
+    # Chỉ thu gọn context với bộ tools mở rộng (bonus); bài chính giữ nguyên tool result
+    # để hành vi khớp với eval_after.json đã nộp.
+    compact = compact_for_context if hasattr(tools, 'schemas') else (lambda result: result)
     messages = [{'role': 'system', 'content': _system_prompt(tools)},
                 {'role': 'user', 'content': question}]
     trace, usage = [], []
@@ -151,9 +154,9 @@ def run_agent(question, provider, tools, max_steps=6):
                 trace.append(entry)  # trace giữ result đầy đủ để đối chiếu
                 observed_urls |= collect_incident_urls(call.get('name'), result)
                 injection_markers |= collect_injection_markers(result)
-                # Context model chỉ nhận bản đã thu gọn (cắt danh sách nhiễu quá dài).
+                # Với tools bonus, context model chỉ nhận bản đã thu gọn (cắt danh sách nhiễu quá dài).
                 messages.append({'role': 'tool', 'tool_call_id': call.get('id'),
-                                 'content': json.dumps(compact_for_context(result), ensure_ascii=False)})
+                                 'content': json.dumps(compact(result), ensure_ascii=False)})
             continue
 
         answer = message.get('content') or ''
