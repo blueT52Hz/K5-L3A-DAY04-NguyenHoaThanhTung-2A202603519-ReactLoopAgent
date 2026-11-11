@@ -9,7 +9,11 @@
 """
 import re
 
+from bonus.tools import HOSTS as BONUS_HOSTS
 from status_tools import HOSTS
+
+# Host trang status của mọi provider (bài chính + bonus) để chấp nhận URL incident đầy đủ.
+ALL_HOSTS = {**HOSTS, **BONUS_HOSTS}
 
 # Dấu hiệu văn bản đang ra lệnh cho model (tiếng Anh + tiếng Việt).
 INJECTION_PATTERNS = re.compile(
@@ -42,7 +46,7 @@ def collect_incident_urls(name, result):
     urls = set()
     if result.get('url'):
         urls.add(result['url'])
-    host = HOSTS.get(result.get('provider'))
+    host = ALL_HOSTS.get(result.get('provider'))
     if host and result.get('id'):  # expected chấp nhận cả trang incident đầy đủ
         urls.add(f"{host}/incidents/{result['id']}")
     return urls
