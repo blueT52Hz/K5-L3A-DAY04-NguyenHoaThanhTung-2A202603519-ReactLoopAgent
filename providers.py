@@ -4,6 +4,10 @@ import os
 import urllib.error
 import urllib.request
 
+from env_file_loader import load_env_file
+
+load_env_file()
+
 CONFIG = {
     'openai': ('OPENAI_API_KEY', 'https://api.openai.com/v1/chat/completions'),
     'gemini': ('GEMINI_API_KEY', 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'),
